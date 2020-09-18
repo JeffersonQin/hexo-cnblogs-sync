@@ -19,4 +19,9 @@ Clone本项目到Hexo博客目录下就行，添加为`submodule`，此外，请
     </span>
 {% endif %}
 ```
+## Notice
 
+如果发现中文转码出现问题，记得运行下面这行命令：
+```bash
+git config --global core.quotepath false
+```
