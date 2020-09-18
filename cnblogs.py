@@ -92,17 +92,23 @@ for index_file in index_files:
                 if ('href' in child.attrs):
                     if (str(child['href']).startswith('/') and not str(child['href']).startswith('//')):
                         child['href'] = 'https://gyrojeff.moe' + child['href']
-        post_body = str(soup.select('div[class=post-body]')[0])
+        post_body = soup.select('div[class=post-body]')[0]
+        math_blocks = post_body.select('script[type="math/tex; mode=display"]')
+        for math_block in math_blocks:
+            math_string = str(math_block).replace('<script type="math/tex; mode=display">', '<p>$$').replace('</script>', '\n$$</p>')
+            math_block.replace_with(BeautifulSoup(math_string, 'html.parser'))
     save_dir = os.path.join(repo_dir, index_file[len(orig_dir):-len("index.html")])
     if not os.path.exists(save_dir): os.makedirs(save_dir)
     copyright_div = str(soup.select('div[class=my_post_copyright]')[0])
     with open(save_dir + 'index.html', 'w', encoding='utf-8') as f:
-        f.write(header + '\n' + copyright_div + '\n' + post_body)
+        f.write(header + '\n' + copyright_div + '\n' + str(post_body))
     tags = soup.select('div[class=post-tags]')
     tags_text = []
-    if tags.count != 0:
-        for tag in tags[0].select('a'):
-            tags_text.append(tag.contents[1][1:])
+    if len(tags) != 0:
+        tags_div = tags[0].select('a')
+        if len(tags_div) > 0:
+            for tag in tags_div:
+                tags_text.append(tag.contents[1][1:])
     
     resource_dict[save_dir + 'index.html'] = {
         'tags': tags_text, 
@@ -160,6 +166,8 @@ for git_path in scanResult['new']:
         repoScanner._repo.index.add(git_path)
         repoScanner._repo.index.commit('New Post: id(' + postid + ')')
         blog_data[file_path] = postid
+        with open('./data/blog_data.json', 'w', encoding="utf-8") as f:
+            json.dump(blog_data, f)
     except Exception as e:
         print('发布失败:', file_path)
         print('错误:')
@@ -196,6 +204,8 @@ for git_path in scanResult['deleted']:
         repoScanner._repo.index.remove(git_path)
         repoScanner._repo.index.commit('Delete Post: id(' + blog_data[file_path] + ')')
         blog_data[file_path] = ''
+        with open('./data/blog_data.json', 'w', encoding="utf-8") as f:
+            json.dump(blog_data, f)
     except Exception as e:
         print('删除失败:', file_path)
         print('错误:')
