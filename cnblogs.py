@@ -85,17 +85,17 @@ for index_file in index_files:
         for child in soup.descendants:
             if (child.name == 'img'):
                 if ('data-original' in child.attrs and 'src' in child.attrs):
-                    child['src'] = 'https://gyrojeff.moe' + child['data-original']
+                    child['src'] = 'https://hexo.gyrojeff.moe' + child['data-original']
                 elif ('src' in child.attrs):
-                    child['src'] = 'https://gyrojeff.moe' + child['src']
+                    child['src'] = 'https://hexo.gyrojeff.moe' + child['src']
             if (child.name == 'a'):
                 if ('href' in child.attrs):
                     if (str(child['href']).startswith('/') and not str(child['href']).startswith('//')):
-                        child['href'] = 'https://gyrojeff.moe' + child['href']
+                        child['href'] = 'https://hexo.gyrojeff.moe' + child['href']
         post_body = soup.select('div[class=post-body]')[0]
         math_blocks = post_body.select('script[type="math/tex; mode=display"]')
         for math_block in math_blocks:
-            math_string = str(math_block).replace('<script type="math/tex; mode=display">', '<p>$$').replace('</script>', '\n$$</p>')
+            math_string = str(math_block).replace('<script type="math/tex; mode=display">', '<p>\n\n$$').replace('</script>', '\n$$\n\n</p>')
             math_block.replace_with(BeautifulSoup(math_string, 'html.parser'))
     save_dir = os.path.join(repo_dir, index_file[len(orig_dir):-len("index.html")])
     if not os.path.exists(save_dir): os.makedirs(save_dir)
@@ -214,3 +214,12 @@ for git_path in scanResult['deleted']:
 with open('./data/blog_data.json', 'w', encoding="utf-8") as f:
     json.dump(blog_data, f)
 
+# Configuration syncing
+
+with open('../config_cnblogs/blog_data.json', 'w', encoding="utf-8") as f:
+    json.dump(blog_data, f)
+config_file_data = None
+with open('./config/blog_config.json', 'r', encoding='utf-8') as f:
+    config_file_data = json.load(f)
+with open('../config_cnblogs/blog_config.json', 'w', encoding="utf-8") as f:
+    json.dump(config_file_data, f)
